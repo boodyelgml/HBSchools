@@ -1,0 +1,161 @@
+/* Accessibility Styles */
+
+/* Focus indicators */
+.focus-visible,
+*:focus-visible {
+  outline: 2px solid #007bff !important;
+  outline-offset: 2px !important;
+  border-radius: 4px;
+}
+
+/* High contrast focus for form elements */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline: 3px solid #007bff !important;
+  outline-offset: 1px !important;
+  box-shadow: 0 0 0 1px #ffffff, 0 0 0 4px #007bff !important;
+}
+
+/* Table row focus */
+tr:focus-visible {
+  outline: 2px solid #007bff !important;
+  outline-offset: -2px !important;
+  background-color: rgba(0, 123, 255, 0.1) !important;
+}
+
+/* Tree item focus */
+.permission-group:focus-within,
+.form-check:focus-within {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+  border-radius: 4px;
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #000;
+  color: #fff;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 1000;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Keyboard navigation indicators */
+.keyboard-focused {
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5) !important;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  *:focus-visible {
+    outline: 3px solid !important;
+    outline-color: Highlight !important;
+  }
+  
+  .table-active {
+    background-color: Highlight !important;
+    color: HighlightText !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus management for modals and dropdowns */
+.modal:focus-within,
+.dropdown-menu:focus-within {
+  outline: none;
+}
+
+/* Ensure interactive elements are large enough */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Improve checkbox and radio button accessibility */
+input[type="checkbox"],
+input[type="radio"] {
+  width: 18px;
+  height: 18px;
+}
+
+input[type="checkbox"]:focus,
+input[type="radio"]:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Table accessibility improvements */
+table {
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+}
+
+/* Form validation accessibility */
+.is-invalid:focus {
+  outline-color: #dc3545 !important;
+  box-shadow: 0 0 0 1px #ffffff, 0 0 0 4px #dc3545 !important;
+}
+
+/* Loading states accessibility */
+[aria-live] {
+  position: relative;
+}
+
+/* Ensure sufficient color contrast */
+.text-muted {
+  color: #6c757d !important;
+}
+
+/* Focus trap for modals */
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Announcement region for screen readers */
+.sr-announcement {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

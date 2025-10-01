@@ -1,0 +1,57 @@
+// Forms
+
+.form-control-xs,
+.form-select-xs {
+  padding: $input-padding-y-xs $input-padding-x-xs;
+  font-size: $input-font-size-xs;
+}
+
+.form-control-xs {
+  + .input-group-text {
+    padding-top: $input-padding-y-xs;
+    padding-bottom: $input-padding-y-xs;
+  }
+}
+
+// Enhanced form spacing
+.form-group,
+.mb-3 {
+  margin-bottom: 1rem;
+}
+
+// Form row spacing
+.row {
+  .col-md-6,
+  .col-md-4,
+  .col-md-3,
+  .col-sm-6,
+  .col-lg-6 {
+    margin-bottom: 0.75rem;
+
+    @media (max-width: 768px) {
+      margin-bottom: 1rem;
+    }
+  }
+}.form-check-input {
+  margin-top: .13em; // height adjustment
+}
+
+.input-group-text {
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.input-group {
+  // To fix Bootstrap-datepicker in RTL
+  direction: ltr;
+}
+
+// For RTL
+[type="tel"],
+[type="url"],
+[type="email"],
+[type="number"] {
+  direction: ltr;
+}

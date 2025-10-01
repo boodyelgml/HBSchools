@@ -1,0 +1,272 @@
+<div class="page-content">
+  <div class="d-flex justify-content-between align-items-center flex-wrap grid-margin">
+    <div>
+      <h4 class="mb-3 mb-md-0">{{ 'USERS.LIST_TITLE' | translate }}</h4>
+    </div>
+    <div class="d-flex align-items-center flex-wrap text-nowrap">
+      <button type="button" class="btn btn-outline-primary btn-icon-text me-2 mb-2 mb-md-0" (click)="refresh()">
+        <i class="feather icon-refresh-cw btn-icon-prepend" appFeatherIcon></i>
+        {{ 'COMMON.REFRESH' | translate }}
+      </button>
+      <div class="btn-group me-2 mb-2 mb-md-0" ngbDropdown>
+        <button type="button" class="btn btn-outline-success btn-icon-text" (click)="exportUsers()">
+          <i class="feather icon-download btn-icon-prepend" appFeatherIcon></i>
+          {{ 'USERS.EXPORT' | translate }}
+        </button>
+        <button type="button" class="btn btn-outline-success dropdown-toggle dropdown-toggle-split" ngbDropdownToggle>
+          <span class="visually-hidden">{{ 'COMMON.TOGGLE_DROPDOWN' | translate }}</span>
+        </button>
+        <div class="dropdown-menu" ngbDropdownMenu>
+          <h6 class="dropdown-header">
+            <i class="feather icon-file-text me-2" appFeatherIcon></i>
+            {{ 'USERS.EXPORT' | translate }} {{ 'NAVBAR.VIEW_ALL' | translate }}
+          </h6>
+          <button class="dropdown-item" (click)="exportToExcel()">
+            <i class="feather icon-file-text text-success me-2" appFeatherIcon></i>
+            {{ 'USERS.EXPORT_EXCEL' | translate }}
+          </button>
+          <button class="dropdown-item" (click)="exportToCsv()">
+            <i class="feather icon-file text-info me-2" appFeatherIcon></i>
+            {{ 'USERS.EXPORT_CSV' | translate }}
+          </button>
+          <button class="dropdown-item" (click)="exportToPdf()">
+            <i class="feather icon-file-minus text-danger me-2" appFeatherIcon></i>
+            {{ 'USERS.EXPORT_PDF' | translate }}
+          </button>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item-text">
+            <small class="text-muted">
+              <i class="feather icon-info me-1" appFeatherIcon></i>
+              {{ 'USERS.EXPORT_INFO' | translate }} ({{ getFilteredUsersForExport().length }} {{ 'USERS.RECORDS' | translate }})
+            </small>
+          </div>
+        </div>
+      </div>
+      <a routerLink="/users/add" class="btn btn-primary btn-icon-text mb-2 mb-md-0">
+        <i class="feather icon-plus btn-icon-prepend" appFeatherIcon></i>
+        {{ 'USERS.ADD_USER' | translate }}
+      </a>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="card-title">{{ 'USERS.TITLE' | translate }}</h6>
+            <div class="d-flex align-items-center">
+              <!-- Search -->
+              <div class="input-group me-3" style="width: 250px;">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="{{ 'USERS.SEARCH_PLACEHOLDER' | translate }}"
+                  [(ngModel)]="searchTerm"
+                  (ngModelChange)="onSearchChange()">
+                <span class="input-group-text">
+                  <i class="feather icon-search" appFeatherIcon></i>
+                </span>
+              </div>
+
+              <!-- Status Filter -->
+              <select
+                class="form-select me-3"
+                style="width: 140px;"
+                [(ngModel)]="statusFilter"
+                (ngModelChange)="onStatusFilterChange()">
+                <option value="all">{{ 'USERS.ALL_STATUSES' | translate }}</option>
+                <option value="active">{{ 'USERS.ACTIVE' | translate }}</option>
+                <option value="inactive">{{ 'USERS.INACTIVE' | translate }}</option>
+              </select>
+
+              <!-- Page Size -->
+              <select
+                class="form-select"
+                style="width: 100px;"
+                [(ngModel)]="pageSize"
+                (ngModelChange)="applyFilters()">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div *ngIf="loading" class="d-flex justify-content-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">{{ 'COMMON.LOADING' | translate }}</span>
+            </div>
+          </div>
+
+          <!-- Error State -->
+          <div *ngIf="error && !loading" class="alert alert-danger" role="alert">
+            <i class="feather icon-alert-circle me-2" appFeatherIcon></i>
+            {{ error }}
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="!loading && !error && filteredUsers.length === 0" class="text-center py-5">
+            <i class="feather icon-users" appFeatherIcon style="font-size: 48px; color: #6c757d;"></i>
+            <h5 class="mt-3 text-muted">{{ 'USERS.NO_USERS_FOUND' | translate }}</h5>
+            <p class="text-muted">{{ 'USERS.ADJUST_SEARCH_CRITERIA' | translate }}</p>
+          </div>
+
+          <!-- Users Table -->
+          <div *ngIf="!loading && !error && filteredUsers.length > 0" class="table-responsive table-container">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th class="sortable" (click)="sort('firstName')">
+                    {{ 'USERS.TABLE.NAME' | translate }}
+                    <i class="feather icon-chevron-up ms-1"
+                       appFeatherIcon
+                       *ngIf="sortBy === 'firstName' && sortDirection === 'asc'"></i>
+                    <i class="feather icon-chevron-down ms-1"
+                       appFeatherIcon
+                       *ngIf="sortBy === 'firstName' && sortDirection === 'desc'"></i>
+                  </th>
+                  <th class="sortable" (click)="sort('email')">
+                    {{ 'USERS.FIELDS.EMAIL' | translate }}
+                    <i class="feather icon-chevron-up ms-1"
+                       appFeatherIcon
+                       *ngIf="sortBy === 'email' && sortDirection === 'asc'"></i>
+                    <i class="feather icon-chevron-down ms-1"
+                       appFeatherIcon
+                       *ngIf="sortBy === 'email' && sortDirection === 'desc'"></i>
+                  </th>
+                  <th class="sortable" (click)="sort('username')">
+                    {{ 'USERS.FIELDS.USERNAME' | translate }}
+                    <i class="feather icon-chevron-up ms-1"
+                       appFeatherIcon
+                       *ngIf="sortBy === 'username' && sortDirection === 'asc'"></i>
+                    <i class="feather icon-chevron-down ms-1"
+                       appFeatherIcon
+                       *ngIf="sortBy === 'username' && sortDirection === 'desc'"></i>
+                  </th>
+                  <th>{{ 'USERS.FIELDS.ROLES' | translate }}</th>
+                  <th>{{ 'USERS.TABLE.CONTACT' | translate }}</th>
+                  <th class="sortable" (click)="sort('isActive')">
+                    {{ 'USERS.FIELDS.STATUS' | translate }}
+                    <i class="feather icon-chevron-up ms-1"
+                       appFeatherIcon
+                       *ngIf="sortBy === 'isActive' && sortDirection === 'asc'"></i>
+                    <i class="feather icon-chevron-down ms-1"
+                       appFeatherIcon
+                       *ngIf="sortBy === 'isActive' && sortDirection === 'desc'"></i>
+                  </th>
+                  <th class="sortable" (click)="sort('createdAt')">
+                    {{ 'USERS.TABLE.CREATED' | translate }}
+                    <i class="feather icon-chevron-up ms-1"
+                       appFeatherIcon
+                       *ngIf="sortBy === 'createdAt' && sortDirection === 'asc'"></i>
+                    <i class="feather icon-chevron-down ms-1"
+                       appFeatherIcon
+                       *ngIf="sortBy === 'createdAt' && sortDirection === 'desc'"></i>
+                  </th>
+                  <th>{{ 'USERS.ACTIONS' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of paginatedUsers">
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar me-3">
+                        <span class="avatar-title bg-primary text-white rounded-circle">
+                          {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
+                        </span>
+                      </div>
+                      <div>
+                        <h6 class="mb-0">{{ user.firstName }} {{ user.lastName }}</h6>
+                        <small class="text-muted" *ngIf="user.displayName">{{ user.displayName }}</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ user.email }}</td>
+                  <td>{{ user.username }}</td>
+                  <td>
+                    <span class="badge bg-info me-1" *ngFor="let role of user.rolesAndPermissions">
+                      {{ role.name }}
+                    </span>
+                    <span class="text-muted" *ngIf="user.rolesAndPermissions.length === 0">
+                      {{ 'USERS.NO_ROLES' | translate }}
+                    </span>
+                  </td>
+                  <td>
+                    <div *ngIf="user.mobileNumber">
+                      <i class="feather icon-phone me-1" appFeatherIcon></i>
+                      {{ user.mobileNumber }}
+                    </div>
+                    <div *ngIf="user.workNumber" class="text-muted small">
+                      <i class="feather icon-briefcase me-1" appFeatherIcon></i>
+                      {{ user.workNumber }}
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge"
+                          [class]="user.isActive ? 'bg-success' : 'bg-secondary'">
+                      {{ getUserStatus(user) }}
+                    </span>
+                  </td>
+                  <td>
+                    <small class="text-muted">{{ formatDate(user.createdAt, 'short') }}</small>
+                  </td>
+                  <td>
+                    <div class="dropdown actions-dropdown" ngbDropdown placement="bottom-right" container="body" autoClose="outside">
+                      <button class="btn btn-link p-0" ngbDropdownToggle id="dropdownMenuButton-{{user.id}}">
+                        <i class="feather icon-more-horizontal" appFeatherIcon></i>
+                      </button>
+                      <div ngbDropdownMenu [attr.aria-labelledby]="'dropdownMenuButton-' + user.id">
+                        <a ngbDropdownItem [routerLink]="['/users/view', user.id]">
+                          <i class="feather icon-eye me-2" appFeatherIcon></i>
+                          {{ 'USERS.VIEW_DETAILS' | translate }}
+                        </a>
+                        <a ngbDropdownItem [routerLink]="['/users/edit', user.id]">
+                          <i class="feather icon-edit me-2" appFeatherIcon></i>
+                          {{ 'USERS.EDIT_USER' | translate }}
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a ngbDropdownItem
+                           (click)="toggleUserStatus(user)"
+                           [class]="user.isActive ? 'text-warning' : 'text-success'">
+                          <i class="feather me-2"
+                             [attr.data-feather]="user.isActive ? 'user-x' : 'user-check'"
+                             appFeatherIcon></i>
+                          {{ user.isActive ? ('USERS.DEACTIVATE' | translate) : ('USERS.ACTIVATE' | translate) }}
+                        </a>
+                        <a ngbDropdownItem (click)="deleteUser(user)" class="text-danger">
+                          <i class="feather icon-trash-2 me-2" appFeatherIcon></i>
+                          {{ 'USERS.DELETE_USER' | translate }}
+                        </a>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div *ngIf="!loading && !error && filteredUsers.length > 0"
+               class="d-flex justify-content-between align-items-center mt-3">
+            <div class="text-muted">
+              {{ 'USERS.PAGINATION.SHOWING' | translate }} {{ (currentPage - 1) * pageSize + 1 }} {{ 'USERS.PAGINATION.TO' | translate }}
+              {{ Math.min(currentPage * pageSize, totalItems) }} {{ 'USERS.PAGINATION.OF' | translate }}
+              {{ totalItems }} {{ 'USERS.PAGINATION.ENTRIES' | translate }}
+            </div>
+            <ngb-pagination
+              [(page)]="currentPage"
+              [pageSize]="pageSize"
+              [collectionSize]="totalItems"
+              [maxSize]="5"
+              [rotate]="true"
+              [boundaryLinks]="true">
+            </ngb-pagination>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
